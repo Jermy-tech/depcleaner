@@ -1,12 +1,8 @@
-[build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "depcleaner"
 version = "1.0.0"
 description = "Detect and remove unused Python dependencies"
-authors = [{name = "DepCleaner Team", email = "team@depcleaner.dev"}]
+authors = [{name = "DepCleaner Team", email = "gmail@google.com"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.8"
@@ -15,6 +11,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+
+# 🔥 Added your GitHub links
+[project.urls]
+Homepage = "https://github.com/Jermy-tech/depcleaner"
+Repository = "https://github.com/Jermy-tech/depcleaner"
+Issues = "https://github.com/Jermy-tech/depcleaner/issues"
 
 [project.scripts]
 depcleaner = "depcleaner.cli:main"
