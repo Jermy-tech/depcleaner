@@ -258,9 +258,29 @@ report.save("report.json")  # or "report.txt"
 1. **Discovery** - Recursively finds all Python files (excludes venv, cache dirs)
 2. **AST Parsing** - Parses files to extract imports accurately
 3. **Usage Analysis** - Detects which imports are actually used in code
-4. **Dependency Mapping** - Maps imports to declared packages
-5. **Standard Library Filtering** - Excludes stdlib modules automatically
-6. **Safe Removal** - Removes unused imports with backups
+4. **Package Name Mapping** - Correctly maps PyPI names to import names (see below)
+5. **Dependency Mapping** - Maps imports to declared packages
+6. **Standard Library Filtering** - Excludes stdlib modules automatically
+7. **Safe Removal** - Removes unused imports with backups
+
+### Package Name Mapping
+
+DepCleaner automatically handles cases where PyPI package names differ from import names:
+
+```python
+# ✓ Correctly identifies these as the SAME package:
+# requirements.txt: cupy-cuda13x==13.6.0
+# your code: import cupy
+
+# ✓ Other examples:
+# pillow → PIL
+# python-dateutil → dateutil  
+# beautifulsoup4 → bs4
+# scikit-learn → sklearn
+# pyyaml → yaml
+```
+
+Supports 50+ common packages plus automatic detection for others!
 
 ---
 
@@ -393,4 +413,3 @@ Built with ❤️ for the Python community.
 Made with 🐍 and ☕
 
 </div>
-
