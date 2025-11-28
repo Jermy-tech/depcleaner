@@ -206,7 +206,94 @@ def test_scanner_handles_unicode_errors() -> None:
         assert report.scanned_files >= 1
 
 
-def test_scanner_get_import_to_package_mapping() -> None:
+def test_scanner_detects_from_import_usage() -> None:
+    """Test that scanner detects usage of symbols imported with 'from X import Y'."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        test_file = tmppath / "test.py"
+        # Use non-stdlib packages to avoid filtering
+        test_file.write_text("""
+import requests
+from bs4 import BeautifulSoup
+from numpy import array
+
+def test_func():
+    soup = BeautifulSoup("<html></html>", "html.parser")
+    arr = array([1, 2, 3])
+    return requests.get("http://example.com")
+""")
+        
+        scanner = Scanner(tmppath)
+        report = scanner.scan()
+        
+        # All three modules should be detected as USED
+        used = report.used_imports[test_file]
+        assert "requests" in used, "requests should be detected as used"
+        assert "bs4" in used, "bs4 should be detected as used (BeautifulSoup is used)"
+        assert "numpy" in used, "numpy should be detected as used (array is used)"
+        
+        # None should be in unused
+        unused = report.get_unused_imports()
+        if test_file in unused:
+            assert "requests" not in unused[test_file]
+            assert "bs4" not in unused[test_file]
+            assert "numpy" not in unused[test_file]
+
+
+def test_scanner_detects_unused_from_imports() -> None:
+    """Test that scanner correctly identifies unused 'from X import Y' imports."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        test_file = tmppath / "test.py"
+        # Use non-stdlib to avoid filtering
+        test_file.write_text("""
+from requests import get
+from numpy import array
+from pandas import DataFrame
+
+# Only array is used
+arr = array([1, 2, 3])
+""")
+        
+        scanner = Scanner(tmppath)
+        report = scanner.scan()
+        
+        used = report.used_imports[test_file]
+        unused = report.get_unused_imports()
+        
+        # numpy should be used (array is used)
+        assert "numpy" in used
+        
+        # requests and pandas should be unused
+        assert test_file in unused
+        assert "requests" in unused[test_file]
+        assert "pandas" in unused[test_file]
+
+
+def test_scanner_handles_import_aliases() -> None:
+    """Test that scanner handles import aliases correctly."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        test_file = tmppath / "test.py"
+        test_file.write_text("""
+import numpy as np
+import pandas as pd
+
+arr = np.array([1, 2, 3])
+df = pd.DataFrame(arr)
+""")
+        
+        scanner = Scanner(tmppath)
+        report = scanner.scan()
+        
+        used = report.used_imports[test_file]
+        
+        # Both should be detected as used
+        assert "numpy" in used
+        assert "pandas" in used
+
+
+def test_scanner_detects_from_import_usage() -> None:
     """Test getting import to package mapping."""
     with tempfile.TemporaryDirectory() as tmpdir:
         tmppath = Path(tmpdir)

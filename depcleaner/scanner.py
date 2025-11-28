@@ -228,32 +228,54 @@ class Scanner:
             self.used_imports[file_path] = self._detect_usage_single_file(file_path)
 
     def _find_used_names(self, tree: ast.AST, imports: Set[str]) -> Set[str]:
-        """Find which imported names are actually used.
-        
-        Args:
-            tree: AST tree to analyze
-            imports: Set of imported names
-            
-        Returns:
-            Set of used import names
-        """
         used = set()
-        
+        alias_map = {}
+
+        # First: build alias map from AST
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    top = alias.name.split(".")[0]
+                    if alias.asname:
+                        alias_map[alias.asname] = top
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    top = node.module.split(".")[0]
+                    for alias in node.names:
+                        # from numpy import array → array → numpy
+                        alias_map[alias.name] = top
+
+        # Second: detect usage
         for node in ast.walk(tree):
             if isinstance(node, ast.Name):
-                if node.id in imports:
-                    used.add(node.id)
+                name = node.id
+
+                # direct import usage (e.g. os, sys)
+                if name in imports:
+                    used.add(name)
+
+                # alias usage (e.g. np → numpy, array → numpy)
+                if name in alias_map:
+                    real = alias_map[name]
+                    if real in imports:
+                        used.add(real)
+
             elif isinstance(node, ast.Attribute):
-                # Handle chained attributes: module.submodule.function
                 root = node
                 while isinstance(root, ast.Attribute):
                     root = root.value
-                if isinstance(root, ast.Name) and root.id in imports:
-                    used.add(root.id)
-            elif isinstance(node, (ast.Import, ast.ImportFrom)):
-                # Skip import statements themselves
-                continue
-        
+
+                if isinstance(root, ast.Name):
+                    name = root.id
+                    # direct usage
+                    if name in imports:
+                        used.add(name)
+                    # alias usage
+                    if name in alias_map:
+                        real = alias_map[name]
+                        if real in imports:
+                            used.add(real)
+
         return used
 
     def _get_declared_dependencies(self) -> Set[str]:
@@ -430,8 +452,18 @@ class Scanner:
             if matched:
                 used_packages.add(matched)
             else:
-                # No match found, add normalized import name as fallback
-                used_packages.add(self._normalize_package_name(import_name))
+                # No match found - this could be:
+                # 1. A package not in declared_deps (missing dependency)
+                # 2. A package without metadata
+                # Default: use normalized import name
+                normalized = self._normalize_package_name(import_name)
+                
+                # Check if this normalized name is in declared deps
+                if normalized in self.declared_deps:
+                    used_packages.add(normalized)
+                else:
+                    # It's a missing dependency - add it anyway so it appears in report
+                    used_packages.add(normalized)
         
         return used_packages
     
