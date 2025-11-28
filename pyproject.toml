@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "depcleaner"
 version = "1.4.1"
-description = "Python dependency cleanup tool with Jupyter notebook support"
+description = "Python dependency cleanup tool"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -92,4 +92,5 @@ disallow_untyped_defs = false
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
 
