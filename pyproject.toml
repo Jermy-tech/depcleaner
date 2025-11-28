@@ -1,6 +1,6 @@
 [project]
 name = "depcleaner"
-version = "1.0.0"
+version = "1.0.1"
 description = "Detect and remove unused Python dependencies"
 authors = [{name = "DepCleaner Team", email = "gmail@google.com"}]
 license = {text = "MIT"}
