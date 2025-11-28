@@ -4,8 +4,7 @@
 
 ![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)
+[![PyPI version](https://badge.fury.io/py/depcleaner.svg)](https://pypi.org/project/depcleaner/)
 
 **A powerful Python dependency cleanup tool that detects and removes unused imports and packages.**
 
@@ -21,16 +20,16 @@ DepCleaner helps you maintain clean, efficient Python projects by automatically 
 
 ### Core Capabilities
 
-- 🔍 **Smart Detection** - Detects unused imports in Python source files using AST parsing
-- 📦 **Package Analysis** - Identifies unused packages in `requirements.txt` and `pyproject.toml`
-- 🛡️ **Safe Operations** - Preview changes before applying them with dry-run mode
-- 🔄 **Auto-Fix Mode** - Automatically remove unused dependencies with one command
-- 📁 **Recursive Scanning** - Scan entire project directories recursively
-- 🔐 **Automatic Backups** - Creates backups before making any modifications
-- 🎯 **Type Hints** - Full type hint support for better IDE integration
-- 📊 **Comprehensive Logging** - Detailed logging for debugging and auditing
-- 🐍 **Python API** - Use DepCleaner programmatically in your scripts
-- ⚡ **Fast & Lightweight** - Minimal dependencies, maximum performance
+- 🔍 **Smart Detection** - AST-based parsing for accurate import detection
+- 📦 **Package Analysis** - Supports `requirements.txt`, `pyproject.toml` (Poetry, PEP 621), and `setup.py`
+- ⚡ **Parallel Processing** - Multi-threaded scanning for faster analysis
+- 🛡️ **Safe Operations** - Dry-run mode and timestamped backups
+- 🔄 **Auto-Fix Mode** - Automatically remove unused dependencies
+- 📁 **Recursive Scanning** - Scan entire project directories
+- 🎯 **CI/CD Ready** - Quick check command with proper exit codes
+- 📊 **Multiple Output Formats** - Text, detailed, and JSON output
+- 🐍 **Python API** - Use programmatically in your scripts
+- 🧠 **Smart Filtering** - Auto-filters standard library modules
 
 ---
 
@@ -56,25 +55,28 @@ cd depcleaner
 pip install -e .
 ```
 
+### Optional Dependencies
+
+For better `pyproject.toml` parsing on Python < 3.11:
+```bash
+pip install depcleaner[toml]
+```
+
 ---
 
 ## 🚀 Quick Start
 
-### 1. Scan your project for unused dependencies
+### 1. Scan your project
 
 ```bash
 depcleaner scan
 ```
 
-This will analyze your project and show you all unused imports and packages without making any changes.
-
-### 2. Preview changes before applying
+### 2. Preview changes
 
 ```bash
 depcleaner fix --dry-run
 ```
-
-See exactly what will be removed before making any modifications.
 
 ### 3. Clean up your project
 
@@ -82,7 +84,11 @@ See exactly what will be removed before making any modifications.
 depcleaner fix
 ```
 
-Automatically remove all unused dependencies with automatic backups.
+### 4. CI/CD Integration
+
+```bash
+depcleaner check  # Exit code 1 if unused deps found
+```
 
 ---
 
@@ -92,81 +98,105 @@ Automatically remove all unused dependencies with automatic backups.
 
 #### Scanning
 
-Scan the current directory:
 ```bash
+# Scan current directory
 depcleaner scan
-```
 
-Scan a specific path:
-```bash
-depcleaner scan --path ./src
-```
+# Scan specific path
+depcleaner scan /path/to/project
 
-Scan with verbose output:
-```bash
-depcleaner -v scan
+# Get JSON output
+depcleaner scan --json
+
+# Detailed output
+depcleaner scan --format detailed
+
+# Quiet mode (errors only)
+depcleaner -q scan
 ```
 
 #### Fixing
 
-Fix with automatic backups (default):
 ```bash
+# Fix with backups (default)
 depcleaner fix
-```
 
-Fix without creating backups:
-```bash
-depcleaner fix --no-backup
-```
-
-Preview changes without modifying files:
-```bash
+# Preview changes only
 depcleaner fix --dry-run
+
+# Fix without backups
+depcleaner fix --no-backup
+
+# Also clean requirements.txt
+depcleaner fix --update-requirements
+
+# Verbose output
+depcleaner -v fix
 ```
 
-Fix a specific directory:
+#### Quick Check (CI/CD)
+
 ```bash
-depcleaner fix --path ./myproject
+# Fast check with exit codes
+depcleaner check
+
+# Use in CI pipelines
+depcleaner check || echo "Unused dependencies found!"
 ```
 
-Combine options:
+#### Project Statistics
+
 ```bash
-depcleaner -v fix --path ./src --dry-run
+# View statistics
+depcleaner stats
+
+# Show all dependencies
+depcleaner stats --show-all
 ```
 
 ### Command Options
 
+| Command | Description |
+|---------|-------------|
+| `scan` | Scan for unused dependencies |
+| `fix` | Remove unused dependencies |
+| `check` | Quick validation (CI-friendly) |
+| `stats` | Show project statistics |
+
 | Option | Description |
 |--------|-------------|
 | `-v, --verbose` | Enable verbose logging |
-| `--path PATH` | Specify the project path to analyze (default: current directory) |
-| `--no-backup` | Skip creating backups before fixing |
-| `--dry-run` | Show what would be changed without modifying files |
+| `-q, --quiet` | Suppress non-error output |
+| `--path PATH` | Project path (default: current directory) |
+| `--json` | Output as JSON |
+| `--format FORMAT` | Output format: summary or detailed |
+| `--dry-run` | Preview without modifying |
+| `--no-backup` | Skip backups |
+| `--update-requirements` | Clean requirements.txt |
 
 ---
 
 ## 🐍 Python API
-
-DepCleaner can also be used programmatically in your Python scripts.
 
 ### Basic Usage
 
 ```python
 from depcleaner import DepCleaner
 
-# Initialize the cleaner
+# Initialize
 cleaner = DepCleaner(project_path=".")
 
-# Scan for unused dependencies
+# Scan project
 report = cleaner.scan()
 print(report)
 
-# Get specific information
+# Get unused items
 unused_imports = report.get_unused_imports()
 unused_packages = report.get_unused_packages()
+missing_packages = report.get_missing_packages()
 
-print(f"Found {len(unused_imports)} unused imports")
-print(f"Found {len(unused_packages)} unused packages")
+print(f"Unused imports: {len(unused_imports)}")
+print(f"Unused packages: {len(unused_packages)}")
 ```
 
 ### Advanced Usage
@@ -174,207 +204,191 @@ print(f"Found {len(unused_packages)} unused packages")
 ```python
 from depcleaner import DepCleaner
 
+# Initialize with options
 cleaner = DepCleaner(
     project_path="./myproject",
-    verbose=True
+    max_workers=8  # Parallel processing
 )
 
-# Scan and get detailed report
+# Get detailed report
 report = cleaner.scan()
 
-# Process each file with unused imports
+# Check each file
 for file_path, imports in report.get_unused_imports().items():
     print(f"\n{file_path}:")
     for imp in imports:
         print(f"  - {imp}")
 
-# Fix issues with backup
-stats = cleaner.fix(backup=True)
+# Fix with options
+stats = cleaner.fix(backup=True, dry_run=False)
 
-print(f"✓ Modified {stats['files_modified']} files")
-print(f"✓ Removed {stats['imports_removed']} imports")
-print(f"✓ Removed {stats['packages_removed']} packages")
+print(f"✓ Files modified: {stats['files_modified']}")
+print(f"✓ Imports removed: {stats['imports_removed']}")
 ```
 
-### Dry Run Mode
+### Useful Methods
 
 ```python
-cleaner = DepCleaner(project_path=".")
+# Validate project structure
+validation = cleaner.validate_project()
+print(validation)
 
-# Preview changes without modifying files
-changes = cleaner.fix(dry_run=True)
+# Estimate cleanup impact
+impact = cleaner.estimate_cleanup_impact()
+print(f"Cleanup potential: {impact['cleanup_percentage']}%")
 
-print("Would make the following changes:")
-for change in changes:
-    print(f"  - {change}")
+# Get dependency graph
+graph = cleaner.get_dependency_graph()
+
+# Find duplicate packages
+duplicates = cleaner.find_duplicate_dependencies()
+
+# Analyze single file
+results = cleaner.analyze_file("src/main.py")
+print(results['unused_imports'])
+
+# Export report
+report.save("report.json")  # or "report.txt"
 ```
 
 ---
 
 ## 🏗️ How It Works
 
-DepCleaner uses a multi-step process to ensure accurate detection:
-
-1. **AST Parsing** - Parses Python files using Abstract Syntax Trees to identify all imports
-2. **Usage Analysis** - Scans code to determine which imports are actually used
-3. **Dependency Mapping** - Maps imports to installed packages
-4. **Cross-referencing** - Compares used packages against declared dependencies
-5. **Safe Removal** - Removes only confirmed unused dependencies with optional backups
-
----
-
-## 🔧 Configuration
-
-### Ignoring Files or Packages
-
-Create a `.depcleanerignore` file in your project root:
-
-```
-# Ignore specific files
-tests/
-*_test.py
-
-# Ignore specific packages
-pytest
-black
-```
-
-### Custom Configuration
-
-Create a `pyproject.toml` configuration:
-
-```toml
-[tool.depcleaner]
-exclude = ["tests/", "docs/"]
-keep_packages = ["pytest", "black"]
-aggressive_mode = false
-```
-
----
-
-## 🧪 Testing
-
-Run the test suite:
-
-```bash
-pytest tests/
-```
-
-Run with coverage:
-
-```bash
-pytest --cov=depcleaner tests/
-```
-
-Generate coverage report:
-
-```bash
-pytest --cov=depcleaner --cov-report=html tests/
-```
+1. **Discovery** - Recursively finds all Python files (excludes venv, cache dirs)
+2. **AST Parsing** - Parses files to extract imports accurately
+3. **Usage Analysis** - Detects which imports are actually used in code
+4. **Dependency Mapping** - Maps imports to declared packages
+5. **Standard Library Filtering** - Excludes stdlib modules automatically
+6. **Safe Removal** - Removes unused imports with backups
 
 ---
 
 ## 📊 Example Output
 
 ```
-🔍 Scanning project for unused dependencies...
+====================================================================
+DepCleaner Scan Report
+====================================================================
+Project: /home/user/myproject
+Files scanned: 42
+Declared dependencies: 15
+Used dependencies: 12
 
-📁 Project: ./myproject
-📄 Files scanned: 42
-⚠️  Unused imports found: 8
-📦 Unused packages found: 3
+Unused Imports:
+--------------------------------------------------------------------
 
-Unused imports:
-  src/utils.py:
-    - os (line 1)
-    - sys (line 2)
-  
-  src/main.py:
-    - json (line 5)
+src/utils.py:
+  - os
+  - sys
 
-Unused packages:
-  - requests (not used in any file)
-  - pandas (not used in any file)
-  - numpy (not used in any file)
+src/main.py:
+  - json
 
-💡 Run 'depcleaner fix --dry-run' to preview changes
+✓ No unused imports found
+
+Unused Packages (declared but not used):
+--------------------------------------------------------------------
+  - requests
+  - pandas
+  - numpy
+
+====================================================================
+```
+
+---
+
+## 🔧 Configuration
+
+DepCleaner works out of the box, but you can customize behavior:
+
+### Excluded Directories
+
+By default, these are excluded:
+- `.venv`, `venv`, `env`, `.env`
+- `__pycache__`, `.pytest_cache`, `.mypy_cache`
+- `.git`, `.hg`, `.svn`
+- `build`, `dist`, `.eggs`, `*.egg-info`
+- `node_modules`, `.tox`, `.coverage`, `htmlcov`
+
+### Programmatic Configuration
+
+```python
+cleaner = DepCleaner(
+    project_path=".",
+    max_workers=4,  # Adjust for your system
+    exclude_dirs={'custom_dir', 'another_dir'}
+)
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run tests
+pytest tests/
+
+# With coverage
+pytest --cov=depcleaner tests/
+
+# Generate HTML coverage report
+pytest --cov=depcleaner --cov-report=html tests/
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
+Contributions welcome! Please check out our [contributing guidelines](CONTRIBUTING.md).
 
-### Reporting Bugs
-
-Found a bug? Please open an issue with:
-- A clear description of the bug
-- Steps to reproduce
-- Expected vs actual behavior
-- Your Python version and OS
-
-### Suggesting Features
-
-Have an idea? Open an issue with:
-- A clear description of the feature
-- Why it would be useful
-- Example use cases
-
-### Submitting Pull Requests
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes with tests
-4. Run the test suite: `pytest tests/`
-5. Commit your changes: `git commit -am 'Add feature'`
-6. Push to your fork: `git push origin feature-name`
-7. Submit a pull request
-
-### Development Setup
+### Quick Start
 
 ```bash
-# Clone the repository
+# Clone repo
 git clone https://github.com/Jermy-tech/depcleaner.git
 cd depcleaner
 
-# Install in development mode
+# Install dev dependencies
 pip install -e ".[dev]"
-
-# Install pre-commit hooks
-pre-commit install
 
 # Run tests
 pytest tests/
+
+# Submit PR
+git checkout -b feature-name
+git commit -am 'Add feature'
+git push origin feature-name
 ```
 
 ---
 
+## 📝 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ by the Python community
-- Inspired by the need for cleaner, more maintainable codebases
-- Thanks to all contributors who help improve this tool
+Built with ❤️ for the Python community.
 
 ---
 
 ## 📮 Contact & Support
 
 - **Issues**: [GitHub Issues](https://github.com/Jermy-tech/depcleaner/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Jermy-tech/depcleaner/discussions)
-- **Twitter**: [@YourTwitter](https://twitter.com/yourhandle)
+- **PyPI**: [pypi.org/project/depcleaner](https://pypi.org/project/depcleaner/)
 
 ---
 
 <div align="center">
 
-**⭐ Star this repository if you find it helpful!**
+**⭐ Star us on GitHub if this tool helps you!**
 
 Made with 🐍 and ☕
 
