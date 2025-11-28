@@ -1,6 +1,6 @@
 [project]
 name = "depcleaner"
-version = "1.2.1"
+version = "1.3.1"
 description = "Detect and remove unused Python dependencies"
 authors = [{name = "DepCleaner Team", email = "gmail@google.com"}]
 license = {text = "MIT"}
@@ -12,7 +12,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-# 🔥 Added your GitHub links
+# 🔥 GitHub links
 [project.urls]
 Homepage = "https://github.com/Jermy-tech/depcleaner"
 Repository = "https://github.com/Jermy-tech/depcleaner"

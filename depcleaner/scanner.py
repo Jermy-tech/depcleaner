@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from depcleaner.report import Report
+from depcleaner.package_mapper import get_mapper
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class Scanner:
         self.python_files: List[Path] = []
         self.all_imports: Dict[Path, Set[str]] = {}
         self.used_imports: Dict[Path, Set[str]] = {}
+        self.declared_deps: Set[str] = set()
         self.stdlib_modules: Set[str] = self._load_stdlib_modules()
 
     def _load_stdlib_modules(self) -> Set[str]:
@@ -58,7 +60,7 @@ class Scanner:
         self._discover_python_files()
         self._analyze_imports_parallel()
         self._detect_unused_parallel()
-        declared_deps = self._get_declared_dependencies()
+        self.declared_deps = self._get_declared_dependencies()
         used_deps = self._get_used_dependencies()
         
         return Report(
@@ -66,7 +68,7 @@ class Scanner:
             scanned_files=len(self.python_files),
             all_imports=self.all_imports,
             used_imports=self.used_imports,
-            declared_deps=declared_deps,
+            declared_deps=self.declared_deps,
             used_deps=used_deps
         )
 
@@ -408,15 +410,59 @@ class Scanner:
         Returns:
             Set of used package names (excluding stdlib)
         """
-        all_used = set()
+        all_used_imports = set()
         for used in self.used_imports.values():
-            all_used.update(used)
+            all_used_imports.update(used)
         
         # Filter out standard library modules
-        external_deps = {
-            self._normalize_package_name(pkg)
-            for pkg in all_used
+        external_imports = {
+            pkg for pkg in all_used_imports
             if pkg.lower() not in self.stdlib_modules
         }
         
-        return external_deps
+        # Map import names to package names using declared packages
+        mapper = get_mapper()
+        used_packages = set()
+        
+        for import_name in external_imports:
+            # Try to match against declared packages
+            matched = mapper.match_import_to_package(import_name, self.declared_deps)
+            if matched:
+                used_packages.add(matched)
+            else:
+                # No match found, add normalized import name as fallback
+                used_packages.add(self._normalize_package_name(import_name))
+        
+        return used_packages
+    
+    def get_import_to_package_mapping(self) -> Dict[str, str]:
+        """Get mapping of import names to their package names.
+        
+        Returns:
+            Dictionary mapping import names to package names
+        """
+        mapper = get_mapper()
+        mapping = {}
+        
+        all_imports = set()
+        for imports in self.all_imports.values():
+            all_imports.update(imports)
+        
+        for import_name in all_imports:
+            if import_name.lower() not in self.stdlib_modules:
+                matched = mapper.match_import_to_package(import_name, self.declared_deps)
+                if matched:
+                    mapping[import_name] = matched
+                else:
+                    # Try to find possible package names
+                    possible = mapper.get_package_names(import_name)
+                    # Check if any are in declared deps
+                    for pkg in possible:
+                        if self._normalize_package_name(pkg) in self.declared_deps:
+                            mapping[import_name] = pkg
+                            break
+                    else:
+                        # Default to normalized import name
+                        mapping[import_name] = self._normalize_package_name(import_name)
+        
+        return mapping
