@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "depcleaner"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python dependency cleanup tool with Jupyter notebook support"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -92,3 +92,4 @@ disallow_untyped_defs = false
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
