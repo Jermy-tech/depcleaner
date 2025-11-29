@@ -22,10 +22,20 @@ def setup_logging(verbose: bool = False, quiet: bool = False) -> None:
     else:
         level = logging.INFO
     
-    logging.basicConfig(
-        level=level,
-        format="%(levelname)s: %(message)s"
-    )
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+    
+    # Remove existing handlers to avoid duplicates
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+    
+    # Add new handler with proper formatting
+    handler = logging.StreamHandler()
+    handler.setLevel(level)
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
 
 
 def cmd_scan(args: argparse.Namespace) -> int:
@@ -323,7 +333,11 @@ Examples:
     )
     
     args = parser.parse_args()
-    setup_logging(args.verbose, args.quiet if hasattr(args, 'quiet') else False)
+    
+    # Setup logging early, before any commands run
+    verbose = getattr(args, 'verbose', False)
+    quiet = getattr(args, 'quiet', False)
+    setup_logging(verbose, quiet)
     
     if not args.command:
         parser.print_help()
