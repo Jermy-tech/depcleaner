@@ -1,8 +1,8 @@
 """Report module for DepCleaner."""
 import json
 from pathlib import Path
-from typing import Dict, Set
-from dataclasses import dataclass, asdict
+from typing import Dict, Set, Any
+from dataclasses import dataclass
 
 
 @dataclass
@@ -198,7 +198,7 @@ class Report:
         with open(output, "w", encoding="utf-8") as f:
             f.write(content)
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """Get statistical summary of the report.
         
         Returns:

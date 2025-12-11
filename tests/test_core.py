@@ -1,7 +1,7 @@
 """Tests for core module."""
 import tempfile
 from pathlib import Path
-import pytest
+import pytest  # type: ignore
 from depcleaner import DepCleaner
 
 

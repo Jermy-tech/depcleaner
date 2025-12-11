@@ -7,7 +7,7 @@ import ast
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Tuple
+from typing import Dict, List, Set, Optional, Callable, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from depcleaner.report import Report
 from depcleaner.package_mapper import get_mapper
@@ -94,7 +94,7 @@ class Scanner:
         
         return stdlib
 
-    def scan(self, progress_callback: Optional[callable] = None) -> Report:
+    def scan(self, progress_callback: Optional[Callable[..., Any]] = None) -> Report:
         """Perform full project scan with progress tracking.
         
         Args:
@@ -264,7 +264,7 @@ class Scanner:
                         content = f.read()
                     tree = ast.parse(content, filename=str(file_path))
                     return self._extract_imports(tree)
-                except:
+                except Exception:
                     continue
             logger.warning(f"Cannot decode {file_path}")
             return set()
@@ -403,7 +403,7 @@ class Scanner:
             # Attribute access (e.g., os.path, np.array)
             elif isinstance(node, ast.Attribute):
                 root = node
-                while isinstance(root, ast.Attribute):
+                while isinstance(root, ast.Attribute):  # type: ignore
                     root = root.value
                     
                 if isinstance(root, ast.Name):
@@ -490,7 +490,7 @@ class Scanner:
                 import tomllib
             except ImportError:
                 try:
-                    import tomli as tomllib
+                    import tomli as tomllib  # type: ignore
                 except ImportError:
                     tomllib = None
             
@@ -600,7 +600,7 @@ class Scanner:
                 import tomllib
             except ImportError:
                 try:
-                    import tomli as tomllib
+                    import tomli as tomllib  # type: ignore
                 except ImportError:
                     return deps
             
@@ -623,8 +623,8 @@ class Scanner:
         
         if isinstance(node, ast.List):
             for elt in node.elts:
-                if isinstance(elt, (ast.Constant, ast.Str)):
-                    value = elt.value if isinstance(elt, ast.Constant) else elt.s
+                if isinstance(elt, ast.Constant):
+                    value = elt.value
                     pkg = self._extract_package_name(str(value))
                     if pkg:
                         deps.add(self._normalize_package_name(pkg))
@@ -701,7 +701,7 @@ class Scanner:
         
         return mapping
 
-    def get_scan_statistics(self) -> Dict[str, any]:
+    def get_scan_statistics(self) -> Dict[str, Any]:
         """Get detailed scanning statistics."""
         return {
             "scan_times": self._scan_times,

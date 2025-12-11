@@ -22,7 +22,7 @@ class PackageMapper:
         except ImportError:
             try:
                 # Backport for older Python
-                from importlib_metadata import packages_distributions
+                from importlib_metadata import packages_distributions  # type: ignore
             except ImportError:
                 logger.warning(
                     "Could not import packages_distributions. "

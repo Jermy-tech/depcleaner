@@ -2,7 +2,6 @@
 import argparse
 import logging
 import sys
-from pathlib import Path
 from depcleaner import DepCleaner
 
 logger = logging.getLogger(__name__)
@@ -118,7 +117,7 @@ def cmd_fix(args: argparse.Namespace) -> int:
             req_stats = cleaner.fixer.update_requirements(report, dry_run=args.dry_run)
             
             if req_stats["file_updated"]:
-                print(f"\nUpdated requirements.txt:")
+                print("\nUpdated requirements.txt:")
                 for pkg in req_stats["packages_removed"]:
                     print(f"  - Removed: {pkg}")
         

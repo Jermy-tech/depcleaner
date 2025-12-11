@@ -1,7 +1,6 @@
 """Tests for scanner module."""
 import tempfile
 from pathlib import Path
-import pytest
 from depcleaner.scanner import Scanner
 
 
@@ -62,7 +61,7 @@ def test_scanner_extracts_imports_parallel() -> None:
         
         # Create multiple files
         for i in range(5):
-            (tmppath / f"test{i}.py").write_text(f"import os\nimport sys\n")
+            (tmppath / f"test{i}.py").write_text("import os\nimport sys\n")
         
         scanner = Scanner(tmppath, max_workers=2)
         scanner._discover_python_files()
@@ -293,7 +292,7 @@ df = pd.DataFrame(arr)
         assert "pandas" in used
 
 
-def test_scanner_detects_from_import_usage() -> None:
+def test_scanner_get_import_to_package_mapping() -> None:
     """Test getting import to package mapping."""
     with tempfile.TemporaryDirectory() as tmpdir:
         tmppath = Path(tmpdir)
@@ -305,7 +304,7 @@ def test_scanner_detects_from_import_usage() -> None:
         
         scanner = Scanner(tmppath)
         # Must call scan() first to populate declared_deps
-        report = scanner.scan()
+        scanner.scan()
         
         # Now we can get the mapping
         mapping = scanner.get_import_to_package_mapping()
