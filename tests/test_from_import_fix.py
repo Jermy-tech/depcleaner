@@ -30,7 +30,7 @@ def test_func():
         print("="*70)
         print("Testing fix for 'from X import Y' detection")
         print("="*70)
-        print(f"\nFile: schema.py")
+        print("\nFile: schema.py")
         print(f"Imports found: {report.all_imports.get(schema_file, set())}")
         print(f"Imports used: {report.used_imports.get(schema_file, set())}")
         
@@ -40,7 +40,7 @@ def test_func():
             print(f"\n❌ FAILED: Incorrectly marked as unused: {unused[schema_file]}")
             return False
         else:
-            print(f"\n✅ PASSED: All imports correctly detected as used!")
+            print("\n✅ PASSED: All imports correctly detected as used!")
             return True
 
 

@@ -7,7 +7,7 @@ import ast
 import logging
 import shutil
 from pathlib import Path
-from typing import Dict, Set, List, Optional
+from typing import Dict, Set, List, Optional, Callable, Any
 from datetime import datetime
 from depcleaner.report import Report
 
@@ -31,7 +31,7 @@ class Fixer:
         report: Report, 
         backup: bool = True, 
         dry_run: bool = False,
-        progress_callback: Optional[callable] = None
+        progress_callback: Optional[Callable[..., Any]] = None
     ) -> Dict[str, int]:
         """Fix unused dependencies with progress tracking.
         
@@ -229,7 +229,7 @@ class Fixer:
         self, 
         report: Report, 
         dry_run: bool = False
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """Update requirements.txt to remove unused packages.
         
         Args:
