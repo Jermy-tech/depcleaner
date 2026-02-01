@@ -3,12 +3,11 @@
 MIT License - Copyright (c) 2024 DepCleaner
 For feature requests or contributions, visit: https://github.com/Jermy-tech/depcleaner
 """
-import sys
 import tempfile
 import json
 from pathlib import Path
 from io import StringIO
-import pytest
+import pytest  # type: ignore
 from unittest.mock import patch
 from depcleaner.cli import (
     setup_logging, cmd_scan, cmd_fix, cmd_check, cmd_stats, main

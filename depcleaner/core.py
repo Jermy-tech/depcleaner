@@ -5,8 +5,7 @@ For feature requests or contributions, visit: https://github.com/Jermy-tech/depc
 """
 import logging
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Set, Optional, Callable, Any, Union
 from depcleaner.scanner import Scanner
 from depcleaner.fixer import Fixer
 from depcleaner.report import Report
@@ -22,8 +21,8 @@ class DepCleaner:
 
     def __init__(
         self,
-        project_path: str = ".",
-        max_workers: int = None,
+        project_path: Union[str, Path] = ".",
+        max_workers: Optional[int] = None,
         exclude_dirs: Optional[Set[str]] = None,
         cache_results: bool = True
     ) -> None:
@@ -64,7 +63,7 @@ class DepCleaner:
     def scan(
         self, 
         force_rescan: bool = False,
-        progress_callback: Optional[callable] = None
+        progress_callback: Optional[Callable[..., Any]] = None
     ) -> Report:
         """Scan project for unused dependencies.
         
@@ -110,7 +109,7 @@ class DepCleaner:
         backup: bool = True,
         dry_run: bool = False,
         file_pattern: Optional[str] = None,
-        progress_callback: Optional[callable] = None
+        progress_callback: Optional[Callable[..., Any]] = None
     ) -> Dict[str, int]:
         """Fix unused dependencies by removing them.
         
@@ -261,7 +260,7 @@ class DepCleaner:
         
         return duplicates
 
-    def estimate_cleanup_impact(self) -> Dict[str, any]:
+    def estimate_cleanup_impact(self) -> Dict[str, Any]:
         """Estimate the impact of running cleanup.
         
         Returns:
@@ -294,13 +293,13 @@ class DepCleaner:
             ]
         }
 
-    def validate_project(self) -> Dict[str, any]:
+    def validate_project(self) -> Dict[str, Any]:
         """Validate project structure and configuration.
         
         Returns:
             Dictionary with validation results and recommendations
         """
-        results = {
+        results: Dict[str, Any] = {
             "valid": True,
             "warnings": [],
             "errors": [],
@@ -384,7 +383,7 @@ class DepCleaner:
         
         logger.info(f"Configuration exported to {output_path}")
 
-    def get_health_score(self) -> Dict[str, any]:
+    def get_health_score(self) -> Dict[str, Any]:
         """Calculate a health score for the project's dependencies.
         
         Returns:
@@ -404,12 +403,12 @@ class DepCleaner:
         # Deduct for unused imports (max -30)
         if total_imports > 0:
             unused_ratio = unused_count / total_imports
-            score -= min(30, unused_ratio * 50)
+            score -= min(30.0, unused_ratio * 50)
         
         # Deduct for unused packages (max -30)
         if len(report.declared_deps) > 0:
             unused_pkg_ratio = len(unused_packages) / len(report.declared_deps)
-            score -= min(30, unused_pkg_ratio * 50)
+            score -= min(30.0, unused_pkg_ratio * 50)
         
         # Deduct for missing packages (max -40)
         score -= min(40, len(missing_packages) * 5)

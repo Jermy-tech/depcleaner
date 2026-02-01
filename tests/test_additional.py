@@ -6,7 +6,6 @@ For feature requests or contributions, visit: https://github.com/Jermy-tech/depc
 import tempfile
 import json
 from pathlib import Path
-import pytest
 from depcleaner import DepCleaner
 from depcleaner.scanner import Scanner
 

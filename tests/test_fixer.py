@@ -1,7 +1,6 @@
 """Tests for fixer module."""
 import tempfile
 from pathlib import Path
-import pytest
 from depcleaner import DepCleaner
 
 
@@ -90,7 +89,7 @@ def test_fixer_preserves_used_imports() -> None:
         test_file.write_text("import os\nimport sys\nprint(os.name)\n")
         
         cleaner = DepCleaner(tmppath)
-        stats = cleaner.fix(backup=False)
+        cleaner.fix(backup=False)
         
         content = test_file.read_text()
         # os should be preserved, sys should be removed
@@ -106,7 +105,7 @@ def test_fixer_handles_from_imports() -> None:
         test_file.write_text("from os import path\nfrom sys import argv\nprint('hello')\n")
         
         cleaner = DepCleaner(tmppath)
-        stats = cleaner.fix(backup=False)
+        cleaner.fix(backup=False)
         
         content = test_file.read_text()
         # Both unused from imports should be removed
