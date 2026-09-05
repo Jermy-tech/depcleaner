@@ -701,3 +701,5 @@ Made with 🧹 and way too much ☕
 [Report Bug](https://github.com/Jermy-tech/depcleaner/issues) · [Request Feature](https://github.com/Jermy-tech/depcleaner/issues) · [View Stats](https://pepy.tech/project/depcleaner)
 
 </div>
+
+<!-- Security scan triggered at 2026-09-05 07:27:21 -->
